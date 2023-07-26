@@ -1,0 +1,297 @@
+Mongo DB is a document based database i.e. stores the data in a document format.
+
+Make the Mongo DB Cluster first, then make database inside of it.
+
+Mongo DB document is somewhat similar to a JavaScript object
+
+Mongo DB community server manages, updates, stores and deletes data in a Mongo DB database
+
+database -> collection -> document (in Mongo DB)
+it is similar to 
+database -> table -> row (in SQL)
+
+Unlike Relational Databases we do not need schema here, this makes MongoDB very popular and hassle free
+eg, first database has Name and Role as its fields and second database has Name and Location as its fields, 
+hence, it is not necessary to have same fields for both databases which is AMAZING!!
+
+URI - It is a connection string which helps us to connect to our MongoDB instance
+
+Running MongoDB in Terminal:
+
+Commands:
+
+1. mongosh - Connects to your MongoDB server
+2. show dbs - Shows us all the databases
+
+CRUD operations - Defines the complete operations for databases
+C - Create
+R - Read
+U - Update
+D - Delete
+
+// Create
+
+3. To insert a single document into a collection, use "db.collection.insertOne()"
+
+eg. db.inventory.insertOne(
+   { item: "canvas", qty: 100, tags: ["cotton"], size: { h: 28, w: 35.5, uom: "cm" } }
+)
+here inventory is a collection
+
+4. use (database name) - To use a particular database
+
+Object IDs here are unique.
+
+5. To insert multiple documents, use "db.collection.insertMany()"
+
+eg. db.inventory.insertMany([
+  { size: { h: 19, w: 22.85, uom: "cm" } },
+  { item: "journal", qty: 25, tags: ["blank", "red"], size: { h: 14, w: 21, uom: "cm" } },
+  { item: "mat", qty: 85, tags: ["gray"], size: { h: 27.9, w: 35.5, uom: "cm" } },
+  { item: "mousepad", qty: 25, tags: ["gel", "blue"] }
+])
+
+
+// Reading Data:
+
+use - "db.collection.find() / db.collection.find({})" to fetch all documents
+
+eg. db.inventory.find() shows us all the possible available databases
+
+Inserting selectors inside of the find function:
+
+eg. db.inventory.find( {tags: {$in: ["D", "red"] } } )
+
+
+We'll use this code sample now:
+
+db.inventory.insertMany([
+   { item: "journal", qty: 25, size: { h: 14, w: 21, uom: "cm" }, status: "A" },
+   { item: "notebook", qty: 50, size: { h: 8.5, w: 11, uom: "in" }, status: "A" },
+   { item: "paper", qty: 100, size: { h: 8.5, w: 11, uom: "in" }, status: "D" },
+   { item: "planner", qty: 75, size: { h: 22.85, w: 30, uom: "cm" }, status: "D" },
+   { item: "postcard", qty: 45, size: { h: 10, w: 15.25, uom: "cm" }, status: "A" }
+]);
+
+// AND and OR operations
+
+OR command has to be written explicitly
+AND has no need to be written explicitly
+
+// AND 
+db.inventory.find( {status: "A", qty: {$lt: 30} } )
+
+// OR
+db.inventory.find( {$or: [ {status: "A"}, {qty: {$lt: 30} } ] } )
+
+Use the "db.inventory.findOne({})" command to just read one document and not an entire array
+
+
+
+
+// Update
+
+use "UpdateOne({})" and 
+"UpdateMany({})"
+
+with the find command.
+
+eg. 
+
+// UpdateOne + find
+
+ db.inventory.find(
+... {item: "paper"}
+... )
+
+ db.inventory.updateOne(
+... {item: "paper" },
+... {
+... $set: {"size.uom": "cm", status: "P" },
+... $currentDate: {lastModified: true }
+... }
+... )
+
+db.inventory.findOne( { item: "paper" })
+
+
+// UpdateMany + find
+
+ db.inventory.find({"qty": {$lt: 50} } )
+
+  db.inventory.updateMany(
+... {"qty": {$lt: 50} },
+... {
+... $set: {
+... "size.uom": "in", status: "P" },
+... $currentDate: {lastModified: true }
+... }
+... )
+
+ db.inventory.find({"qty": {$lt: 50} } )
+
+
+// Delete
+
+"db.collection.deleteMany({})" - Deletes anything and EVERYTHING that matches its description
+
+eg. "db.inventory.deleteMany({})" 
+
+we'll see "deleteOne", "deleteMany" and "remove"
+
+eg, db.inventory.insertMany( [
+... { item: "journal", qty: 25, size: { h: 14, w: 21, uom: "cm" }, status: "A" },
+... { item: "notebook", qty: 50, size: { h: 8.5, w: 11, uom: "in" }, status: "P" },
+... { item: "paper", qty: 100, size: { h: 8.5, w: 11, uom: "in" }, status: "D" },
+... { item: "planner", qty: 75, size: { h: 22.85, w: 30, uom: "cm" }, status: "D" },
+... { item: "postcard", qty: 45, size: { h: 10, w: 15.25, uom: "cm" }, status: "A" },
+... ] );
+
+db.inventory.deleteOne( {status: "D" })
+
+db.inventory.deleteMany( {status: "A" })
+
+db.inventory.remove({status: "P" })
+
+// difference between deleteMany and Remove:
+
+Delete Many is a boolean type and returns true if the operation is successfull whereas, Remove returns the total operation data that it has removed, both however execute the same operation.
+
+
+// Sorting, Skipping and Limiting Data
+
+
+// DB
+
+db.inventory.insertMany([ { item: "journal", qty: 25, tags: ["blank", "red"], size: { h: 14, w: 21, uom: "cm" } }, { item: "mat", qty: 85, tags: ["gray"], size: { h: 27.9, w: 35.5, uom: "cm" } }, { item: "mousepad", qty: 25, tags: ["gel", "blue"]}])
+
+
+
+// Limiting
+
+eg.  db.inventory.find().limit(1) - Limits the find to 1
+
+eg.  db.inventory.find().limit(2) - Limits the find to 2
+
+ 
+ // Skipping
+
+ eg. db.inventory.find().skip(1) - skips the first document and gives us the next 2 documents
+
+ .skip is used in Pagination (breaking into smaller pages)
+
+ eg. 
+ no = 8 (no. of blogs in a page)
+ db.blogs.find().skip((pageNo - 1) * no).limit(no)
+pageNo = 1 => db.blogs.find().skip(0).limit(8)
+pageNo = 2 => db.blogs.find().skip(8).limit(8)
+(skip first 8 blogs and get the next 8 blogs from page no. 2)
+
+// Sorting
+
+eg. db.inventory.find().sort({qty: 1})
+
+// Sorts in ascending order
+
+eg. db.inventory.find().sort({qty: -1})
+
+// Sorts in descending order
+
+
+// MongoDB Query Operators
+
+$eq
+Matches values that are equal to a specified value.
+
+$gt
+Matches values that are greater than a specified value.
+
+$gte
+Matches values that are greater than or equal to a specified value.
+
+$in
+Matches any of the values specified in an array.
+
+$lt
+Matches values that are less than a specified value.
+
+$lte
+Matches values that are less than or equal to a specified value.
+
+$ne
+Matches all values that are not equal to a specified value.
+
+$nin
+Matches none of the values specified in an array.
+
+eg.
+db.inventory.insertMany([
+   { item: "journal", qty: 25, tags: ["blank", "red"], size: { h: 14, w: 21, uom: "cm" } },
+   { item: "mat", qty: 85, tags: ["gray"], size: { h: 27.9, w: 35.5, uom: "cm" } },
+   { item: "mousepad", qty: 25, tags: ["gel", "blue"], size: { h: 19, w: 22.85, uom: "cm" } }
+])
+
+db.inventory.find({qty: {$lt:30}})
+
+db.inventory.find({qty: {$in:[25,30]}})
+
+db.inventory.find({qty: {$in:[25,30, 100]}})
+
+db.inventory.find({qty: {$in:[25,30, 50]}})
+
+
+// Aggregation Pipeline
+
+eg. db.orders.insertMany( [
+   { _id: 0, name: "Pepperoni", size: "small", price: 19,
+     quantity: 10, date: ISODate( "2021-03-13T08:14:30Z" ) },
+   { _id: 1, name: "Pepperoni", size: "medium", price: 20,
+     quantity: 20, date : ISODate( "2021-03-13T09:13:24Z" ) },
+   { _id: 2, name: "Pepperoni", size: "large", price: 21,
+     quantity: 30, date : ISODate( "2021-03-17T09:22:12Z" ) },
+   { _id: 3, name: "Cheese", size: "small", price: 12,
+     quantity: 15, date : ISODate( "2021-03-13T11:21:39.736Z" ) },
+   { _id: 4, name: "Cheese", size: "medium", price: 13,
+     quantity:50, date : ISODate( "2022-01-12T21:23:13.331Z" ) },
+   { _id: 5, name: "Cheese", size: "large", price: 14,
+     quantity: 10, date : ISODate( "2022-01-12T05:08:13Z" ) },
+   { _id: 6, name: "Vegan", size: "small", price: 17,
+     quantity: 10, date : ISODate( "2021-01-13T05:08:13Z" ) },
+   { _id: 7, name: "Vegan", size: "medium", price: 18,
+     quantity: 10, date : ISODate( "2021-01-13T05:10:13Z" ) }
+] )
+
+
+db.orders.aggregate( [
+
+   // Stage 1: Filter pizza order documents by pizza size
+   {
+      $match: { size: "medium" }
+   },
+
+   // Stage 2: Group remaining documents by pizza name and calculate total quantity
+   {
+      $group: { _id: "$name", totalQuantity: { $sum: "$quantity" } }
+   }
+
+] )
+
+
+
+The $match stage:
+
+Filters the pizza order documents to pizzas with a size of medium.
+
+Passes the remaining documents to the $group stage.
+
+The $group stage:
+
+Groups the remaining documents by pizza name.
+
+Uses $sum to calculate the total order quantity for each pizza name. The total is stored in the totalQuantity field returned by the aggregation pipeline.
+
+// see Pepperoni eg.
+
+db.orders.find({name: "Pepperoni"})
+
+db.orders.find({name: "Pepperoni", size: "medium"})
